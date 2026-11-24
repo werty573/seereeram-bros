@@ -142,8 +142,16 @@
     </li>`).join('');
   const rows = $$('.row', list);
   // preload preview images
-  const seen = new Set();
-  P.forEach(p => { if (!seen.has(p.i)) { seen.add(p.i); const im = new Image(); im.src = U(IMG[p.i], 1100); } });
+  // warm the preview images only on desktop, once the index is near the viewport
+  if (matchMedia('(min-width: 861px)').matches) {
+    const pio = new IntersectionObserver(es => {
+      if (!es[0].isIntersecting) return;
+      pio.disconnect();
+      const seen = new Set();
+      P.forEach(p => { if (!seen.has(p.i)) { seen.add(p.i); const im = new Image(); im.src = U(IMG[p.i], 900); } });
+    }, {rootMargin: '400px 0px'});
+    pio.observe(list);
+  }
 
   let cur = -1, swapT;
   const show = k => {
@@ -154,7 +162,7 @@
     pvImg.classList.add('swap');
     clearTimeout(swapT);
     swapT = setTimeout(() => {
-      pvImg.src = U(IMG[p.i], 1100);
+      pvImg.src = U(IMG[p.i], 900);
       pvName.textContent = p.t;
       pvType.textContent = TYPE[p.c[0]];
       pvPlace.textContent = p.p;
