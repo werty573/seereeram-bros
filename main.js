@@ -22,29 +22,35 @@
   };
   const TYPE = {highway:'Highways', interchange:'Interchanges & bridges', air:'Airports & ports', earth:'Earthworks', road:'Road rehab', region:'Outside T&T'};
 
-  // All project names from the company's own published project list (seereerambros.com) plus the 2023 MOWT award.
+  // Every project below is named on the company's own site (seereerambros.com). k = client tag as published there.
   const P = [
-    {t:'Barataria Flyover', p:'Trinidad', c:['interchange'], i:'interchangeLanes'},
-    {t:'San Fernando Interchange', p:'Trinidad', c:['interchange'], i:'interchangeRiver'},
-    {t:'Solomon Hochoy Highway extension, Tarouba to Golconda', p:'Trinidad', c:['highway'], i:'interchangeGreen'},
-    {t:'Land reclamation and runway extension, ANR Robinson International Airport', p:'Tobago', c:['air','earth'], i:'runway'},
+    {t:'Barataria Flyover', p:'Trinidad', c:['interchange'], i:'interchangeLanes', n:'Longest-spanning flyover in the country'},
+    {t:'San Fernando Interchange', p:'Trinidad', c:['interchange'], i:'interchangeRiver', k:'GOTT', n:'Main contractor on a complex, highly technical road project'},
+    {t:'Solomon Hochoy Highway extension, Tarouba to Golconda', p:'Trinidad', c:['highway'], i:'interchangeGreen', k:'GOTT'},
+    {t:'Land reclamation and runway extension, ANR Robinson International Airport', p:'Tobago', c:['air','earth'], i:'runway', n:'Formerly Crown Point International Airport'},
     {t:'Claude Noel Highway', p:'Tobago', c:['highway'], i:'rollers'},
     {t:'Package A, Churchill Roosevelt / Uriah Butler Interchange', p:'Trinidad', c:['interchange'], i:'interchangeDusk'},
-    {t:'Earthworks, Piarco International Airport', p:'Trinidad', c:['air','earth'], i:'landing'},
-    {t:'Foundations and approaches, new Caroni Bridge', p:'Southern Main Road', c:['interchange'], i:'bridgeLift'},
+    {t:'Earthworks, Piarco International Airport', p:'Trinidad', c:['air','earth'], i:'landing', k:'AATT'},
+    {t:'Foundations and approaches, new Caroni Bridge, Southern Main Road', p:'Trinidad', c:['interchange'], i:'bridgeLift'},
     {t:'Preysal Interchange, East', p:'Trinidad', c:['interchange'], i:'graderField'},
+    {t:'Maraval Roundabout', p:'Trinidad', c:['road'], i:'ammann', k:'GOTT'},
     {t:'Paving of the expanded apron, ANR Robinson International Airport', p:'Tobago', c:['air'], i:'paver'},
-    {t:'Paving of the yard, Port of Port of Spain', p:'Trinidad', c:['air'], i:'compactor'},
-    {t:'Soesdyke / Linden Highway', p:'Guyana', c:['highway','region'], i:'graderGravel'},
-    {t:'East and West Bank Road, Lots 1 and 2', p:'Guyana', c:['road','region'], i:'ammann'},
+    {t:'Rehabilitation and paving of the yard, Port of Port of Spain', p:'Trinidad', c:['air'], i:'compactor'},
+    {t:'Churchill Roosevelt Highway', p:'Trinidad', c:['highway'], i:'interchangeLanes'},
+    {t:'Four-lane highway construction, extension to Providence', p:'Trinidad', c:['highway'], i:'dumpTruck'},
+    {t:'Rehabilitation of the Soesdyke / Linden Highway', p:'Guyana', c:['highway','road','region'], i:'graderGravel'},
+    {t:'Maintenance of 90+ miles of highway', p:'Guyana', c:['road','region'], i:'rollers'},
+    {t:'Lot 1, East Bank Road, Ruimveldt to Demerara Harbour Bridge', p:'Guyana', c:['road','region'], i:'ammann'},
+    {t:'Lot 2, West Bank Road, Demerara Harbour Bridge to Vreed-en-Hoop', p:'Guyana', c:['road','region'], i:'paver'},
     {t:'Agricultural feeder roads', p:'Grenada', c:['road','region'], i:'culvert'},
     {t:'Earthworks and infrastructure, Brian Lara Cricket Academy', p:'Trinidad', c:['earth'], i:'grader'},
     {t:'Infrastructure works, Tamana InTech Park Phase 2', p:'Trinidad', c:['earth'], i:'excavator'},
-    {t:'Four-lane highway extension to Providence', p:'Trinidad', c:['highway'], i:'dumpTruck'},
     {t:'Lady Young Road', p:'Trinidad', c:['road'], i:'paver'},
-    {t:'Maraval Access, Saddle Road', p:'Trinidad', c:['road'], i:'rollers'},
-    {t:'Couva, Cedar Hill and Diego Martin Main Roads', p:'Trinidad', c:['road'], i:'ammann'},
-    {t:'Guaico Tamana Road, sectional rehabilitation', p:'Trinidad', c:['road'], i:'compactor'}
+    {t:'Improvement to Maraval Access, Saddle Road', p:'Trinidad', c:['road'], i:'rollers'},
+    {t:'Rehabilitation and reconstruction, Couva Main Road', p:'Trinidad', c:['road'], i:'compactor'},
+    {t:'Rehabilitation and reconstruction, Cedar Hill Road', p:'Trinidad', c:['road'], i:'graderField'},
+    {t:'Rehabilitation and reconstruction, Diego Martin Main Road', p:'Trinidad', c:['road'], i:'ammann'},
+    {t:'Rehabilitation and reconstruction, Guaracara Tabaquite Main Road', p:'Trinidad', c:['road'], i:'paver'}
   ];
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -126,7 +132,7 @@
 
   /* project index */
   const list = $('#indexList');
-  const pvImg = $('#pvImg'), pvName = $('#pvName'), pvType = $('#pvType'), pvPlace = $('#pvPlace');
+  const pvImg = $('#pvImg'), pvName = $('#pvName'), pvType = $('#pvType'), pvPlace = $('#pvPlace'), pvNote = $('#pvNote');
   list.innerHTML = P.map((p, k) => `
     <li class="row" tabindex="0" data-k="${k}" data-c="${p.c.join(' ')}">
       <img class="thumb" loading="lazy" src="${U(IMG[p.i], 220)}" alt="">
@@ -152,6 +158,7 @@
       pvName.textContent = p.t;
       pvType.textContent = TYPE[p.c[0]];
       pvPlace.textContent = p.p;
+      pvNote.textContent = [p.k ? 'Client: ' + p.k : '', p.n || ''].filter(Boolean).join('. ');
       requestAnimationFrame(() => pvImg.classList.remove('swap'));
     }, 160);
   };
@@ -161,12 +168,15 @@
   });
   show(0);
 
+  const more = $('#moreBtn');
+  more.addEventListener('click', () => list.classList.toggle('clip', false));
   const tabs = $$('.filters button');
   tabs.forEach(b => {
     const f = b.dataset.f;
     b.querySelector('sup').textContent = f === 'all' ? P.length : P.filter(p => p.c.includes(f)).length;
     b.addEventListener('click', () => {
       tabs.forEach(t => t.setAttribute('aria-selected', String(t === b)));
+      list.classList.toggle('clip', f === 'all');
       let first = -1, i = 0;
       rows.forEach(r => {
         const on = f === 'all' || r.dataset.c.split(' ').includes(f);

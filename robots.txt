@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://werty573.github.io/seereeram-bros/sitemap.xml
